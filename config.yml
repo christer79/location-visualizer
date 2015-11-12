@@ -1,0 +1,26 @@
+Filter:
+  Latitude:
+    min: 55136731
+    max: 999999999999
+  Longitude:
+    min: -28433583
+    max: 999999999999
+  Accuracy:
+    min: 0
+    max: 10000
+  Time:
+    min: "2008-01-01"
+    max: "2016-01-01"
+
+OutputFormat:
+  type: "jpeg"
+  filename: "output.jpg"
+  width: 40024
+  height: 40024
+  circleSize: 10
+  opacity: 128
+
+InputFiles:
+  InputFile:
+    path: Platshistorik.json
+    type: json
