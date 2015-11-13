@@ -15,8 +15,8 @@ Filter:
 OutputFormat:
   type: "jpeg"
   filename: "output.jpg"
-  width: 40024
-  height: 40024
+  width: 1024
+  height: 1024
   circleSize: 10
   opacity: 128
 
