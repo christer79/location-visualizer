@@ -1,0 +1,10 @@
+outputs:
+ - type: "jpeg"
+   filename: "output.jpg"
+   width: 1024
+   height: 1024
+   circleSize: 10
+   opacity: 128
+
+ - type: "text"
+   filename: "output.txt"

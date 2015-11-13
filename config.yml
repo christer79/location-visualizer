@@ -6,21 +6,23 @@ Filter:
     min: -28433583
     max: 999999999999
   Accuracy:
-    min: 0
+    min: 4000
     max: 10000
   Time:
     min: "2008-01-01"
     max: "2016-01-01"
 
-OutputFormat:
-  type: "jpeg"
-  filename: "output.jpg"
-  width: 1024
-  height: 1024
-  circleSize: 10
-  opacity: 128
+outputs:
+ - type: "jpeg"
+   filename: "output.jpg"
+   width: 1024
+   height: 1024
+   circleSize: 10
+   opacity: 128
 
-InputFiles:
-  InputFile:
-    path: Platshistorik.json
-    type: json
+ - type: "json"
+   filename: "filtered_data.json"
+
+inputs:
+ - path: Platshistorik.json
+   type: json

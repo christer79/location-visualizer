@@ -7,29 +7,13 @@ import (
 	"image"
 	"image/jpeg"
 	"io/ioutil"
-	"math"
 	"os"
+
+	"github.com/christer79/location-visualizer/config"
 
 	"github.com/dustin/go-heatmap"
 	"github.com/dustin/go-heatmap/schemes"
-	"gopkg.in/yaml.v2"
 )
-
-//InputFile holds information about a source for input
-type InputFile struct {
-	Path     string `yaml:"path"`
-	FileType string `yaml:"type"`
-}
-
-//InputFiles list of files to read input data from
-type InputFiles struct {
-	InputFiles InputFile `yaml:"InputFile"`
-}
-
-//InputFilesHelper helper to read list of files to read input data from
-type InputFilesHelper struct {
-	InputFiles InputFiles `yaml:"InputFiles"`
-}
 
 //Activity keep an activity type and yhe confidence of that activity
 type Activity struct {
@@ -61,46 +45,6 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
-}
-
-// IntervalString min adn max values of type string
-type IntervalString struct {
-	Min string `yaml:"min"`
-	Max string `yaml:"max"`
-}
-
-//IntervalInt min adn max vaue of type int
-type IntervalInt struct {
-	Min int `yaml:"min"`
-	Max int `yaml:"max"`
-}
-
-// Filters helper to pars Filter type from yaml configuration
-type Filters struct {
-	Filter Filter `yaml:"Filter"`
-}
-
-//Filter a struct to keep intervals for which to filter location data
-type Filter struct {
-	Latitude  IntervalInt    `yaml:"Latitude"`
-	Longitude IntervalInt    `yaml:"Longitude"`
-	Accuracy  IntervalInt    `yaml:"Accuracy"`
-	Time      IntervalString `yaml:"Time"`
-}
-
-//OutputFormat struct with parameters for how to format the output data
-type OutputFormat struct {
-	Filetype   string `yaml:"type"`
-	Filename   string `yaml:"filename"`
-	Width      int    `yaml:"width"`
-	Height     int    `yaml:"height"`
-	CircleSize int    `yaml:"circleSize"`
-	Opacity    uint8  `yaml:"opacity"`
-}
-
-//OutputFormats helper to help parse OutputFormat from yaml-file
-type OutputFormats struct {
-	OutputFormat OutputFormat `yaml:"OutputFormat"`
 }
 
 func getmaxValues(locations Locations) {
@@ -136,7 +80,7 @@ func getmaxValues(locations Locations) {
 
 }
 
-func filterValues(locations Locations, filter Filter) Locations {
+func filterValues(locations Locations, filter config.Filter) Locations {
 	var filtered Locations
 
 	for _, location := range locations.Locations {
@@ -195,8 +139,8 @@ func readData(filename string) Locations {
 func writeData(filename string, locations Locations) {
 	out, err := os.Create(filename)
 	if err != nil {
-		fmt.Println(err)
 		os.Exit(1)
+		fmt.Println(err)
 	}
 
 	dat, err := json.Marshal(locations)
@@ -206,83 +150,35 @@ func writeData(filename string, locations Locations) {
 	out.Write(dat)
 }
 
-func parseConfigFilter(filename string) Filters {
-	var filter Filters
-	dat, frErr := ioutil.ReadFile(filename)
-	check(frErr)
-	err := yaml.Unmarshal(dat, &filter)
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	return filter
-}
-func parseConfigOutputFormat(filename string) OutputFormat {
-	var outputformat OutputFormats
-	dat, frErr := ioutil.ReadFile(filename)
-	check(frErr)
-	err := yaml.Unmarshal(dat, &outputformat)
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	return outputformat.OutputFormat
-}
-
-func parseConfigInput(filename string) InputFiles {
-	var inputfileshelper InputFilesHelper
-	dat, frErr := ioutil.ReadFile(filename)
-	check(frErr)
-	err := yaml.Unmarshal(dat, &inputfileshelper)
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	return inputfileshelper.InputFiles
-}
-
 func main() {
 
 	configPath := flag.String("config", "", "Path to configuration file")
 
-	//inputFile := flag.String("input", "Platshistorik.json", "Input file")
-	outputFile := flag.String("output", "output.jpg", "Output file")
-
-	minLong := flag.Int("minlong", math.MinInt64, "Minimum value of longitude")
-	maxLong := flag.Int("maxlong", math.MaxInt64, "Maximum value of longitude")
-	minLat := flag.Int("minlat", math.MinInt64, "Minimum value of latitude")
-	maxLat := flag.Int("maxlat", math.MaxInt64, "Maximum value of latitude")
-
-	jpegWidth := flag.Int("width", 1024, "Width of output file")
-	jpegHeight := flag.Int("height", 1024, "Height of output file.")
-	jpegOpacity := flag.Uint("opacity", 128, "Opacity of heat circles")
-	jpegCircleSize := flag.Int("size", 2, "Imact circle size of data point")
-
 	flag.Parse()
-	var filter Filter
-	var outputformat OutputFormat
-	var inputfiles InputFiles
+	var filter config.Filter
+	var outputformat config.OutputFormats
+	var inputs config.Inputs
 
 	if *configPath != "" {
 		fmt.Println("config: " + *configPath)
-		filter = parseConfigFilter(*configPath).Filter
+		filter = config.ParseConfigFilter(*configPath).Filter
 		fmt.Println(filter)
-		outputformat = parseConfigOutputFormat(*configPath)
+		outputformat = config.ParseConfigOutputFormat(*configPath)
 		fmt.Println(outputformat)
-		inputfiles = parseConfigInput(*configPath)
-		fmt.Println(inputfiles)
-
-	} else {
-		filter = Filter{Latitude: IntervalInt{Min: *minLat, Max: *maxLat}, Longitude: IntervalInt{Min: *minLong, Max: *maxLong}}
-		outputformat = OutputFormat{Filename: *outputFile, Width: *jpegWidth, Height: *jpegHeight, CircleSize: *jpegCircleSize, Opacity: uint8(*jpegOpacity)}
+		inputs = config.ParseConfigInput(*configPath)
+		fmt.Println(inputs)
 
 	}
+	var locations Locations
+	for _, input := range inputs.Inputs {
 
-	fmt.Println("Input:" + inputfiles.InputFiles.Path)
+		fmt.Printf("Input \n - type: %s \n - path: %s \n", input.Type, input.Path)
 
-	locations := readData(inputfiles.InputFiles.Path)
+		locations = readData(input.Path)
+	}
 	getmaxValues(locations)
 
 	filteredLocations := filterValues(locations, filter)
-
-	writeData("filtered_data.json", filteredLocations)
 
 	points := []heatmap.DataPoint{}
 	for _, location := range filteredLocations.Locations {
@@ -290,14 +186,22 @@ func main() {
 			heatmap.P(float64(location.LongitudeE7), float64(location.LatitudeE7)))
 	}
 
-	// scheme, _ := schemes.FromImage("../schemes/fire.png")
-	scheme := schemes.OMG
+	for _, format := range outputformat.Outputs {
+		fmt.Printf("Output \n - type: %s \n - path: %s \n", format.Filetype, format.Filename)
+		if format.Filetype == "json" {
+			writeData(format.Filename, filteredLocations)
+		}
+		if format.Filetype == "jpeg" {
+			// scheme, _ := schemes.FromImage("../schemes/fire.png")
+			scheme := schemes.OMG
 
-	img := heatmap.Heatmap(image.Rect(0, 0, outputformat.Width, outputformat.Height),
-		points, outputformat.CircleSize, uint8(outputformat.Opacity), scheme)
+			img := heatmap.Heatmap(image.Rect(0, 0, format.Width, format.Height),
+				points, format.CircleSize, uint8(format.Opacity), scheme)
 
-	fmt.Println("Writing to: " + outputformat.Filename)
-	writeImgToFile(img, outputformat.Filename)
+			fmt.Println("Writing to: " + format.Filename)
+			writeImgToFile(img, format.Filename)
+		}
+	}
 }
 
 //png.Encode(os.Stdout, img)

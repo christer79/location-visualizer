@@ -1,0 +1,9 @@
+inputs:
+ - path: Platshistorik.json
+   type: json
+
+ - path: test1.csv
+   type: csv
+
+ - path: test.gpx
+   type: gpx
