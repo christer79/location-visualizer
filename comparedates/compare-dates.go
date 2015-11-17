@@ -1,7 +1,6 @@
 package comparedates
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 )
@@ -29,7 +28,6 @@ func ParseTimeNs(str string) time.Time {
 	var sec, nsec int64
 	nsec_str = str[len(str)-3:]
 	sec_str = str[:len(str)-3]
-	fmt.Printf("sec: %s nsec: %s ", sec_str, nsec_str)
 	sec, _ = strconv.ParseInt(sec_str, 10, 64)
 	nsec, _ = strconv.ParseInt(nsec_str, 10, 64)
 	return time.Unix(sec, nsec)

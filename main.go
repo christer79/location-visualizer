@@ -8,7 +8,9 @@ import (
 	"image/jpeg"
 	"io/ioutil"
 	"os"
+	"time"
 
+	"github.com/christer79/location-visualizer/comparedates"
 	"github.com/christer79/location-visualizer/config"
 
 	"github.com/dustin/go-heatmap"
@@ -83,7 +85,15 @@ func getmaxValues(locations Locations) {
 func filterValues(locations Locations, filter config.Filter) Locations {
 	var filtered Locations
 
+	var beginTime = comparedates.ParseTimeStr(filter.Time.Min)
+	var endTime = comparedates.ParseTimeStr(filter.Time.Max)
+	var compareTime = false
+	if filter.Time.Min != "" && filter.Time.Max != "" {
+		compareTime = true
+	}
+	var timeStamp time.Time
 	for _, location := range locations.Locations {
+
 		if location.LatitudeE7 < filter.Latitude.Min {
 			continue
 		}
@@ -97,7 +107,14 @@ func filterValues(locations Locations, filter config.Filter) Locations {
 			continue
 		}
 
+		if compareTime == true {
+			timeStamp = comparedates.ParseTimeNs(location.TimestampMs)
+			if !comparedates.InTimespan(beginTime, endTime, timeStamp) {
+				continue
+			}
+		}
 		filtered.Locations = append(filtered.Locations, location)
+
 	}
 	return filtered
 }
