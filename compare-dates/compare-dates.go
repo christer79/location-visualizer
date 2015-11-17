@@ -1,6 +1,10 @@
 package comparedates
 
-import "time"
+import (
+	"fmt"
+	"strconv"
+	"time"
+)
 
 func InTimespan(start, end, check time.Time) bool {
 	return start.Before(check) && check.Before(end)
@@ -20,14 +24,13 @@ func ParseTimeStr(str string) time.Time {
 }
 
 func ParseTimeNs(str string) time.Time {
-	var nsec_str, sec_str string
+	var nsec_str string
+	var sec_str string
 	var sec, nsec int64
-	var t time.Time
-	var err error
-	t, err = time.Parse(timeLayout, str)
-	if err != nil {
-		t, _ := time.Parse(timeLayoutShort, str)
-		return t
-	}
-	return t
+	nsec_str = str[len(str)-3:]
+	sec_str = str[:len(str)-3]
+	fmt.Printf("sec: %s nsec: %s ", sec_str, nsec_str)
+	sec, _ = strconv.ParseInt(sec_str, 10, 64)
+	nsec, _ = strconv.ParseInt(nsec_str, 10, 64)
+	return time.Unix(sec, nsec)
 }

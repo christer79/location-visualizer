@@ -44,3 +44,18 @@ func TestParseTimeStr(t *testing.T) {
 		}
 	}
 }
+
+func TestParseTimeNs(t *testing.T) {
+	cases := []struct {
+		str  string
+		want time.Time
+	}{
+		{"1445444040096", time.Date(2015, time.October, 21, 18, 14, 00, 96, time.Local)},
+	}
+	for _, c := range cases {
+		got := ParseTimeNs(c.str)
+		if got != c.want {
+			t.Errorf("ParseTime(%v) == %v, want %v", c.str, got, c.want)
+		}
+	}
+}
