@@ -1,3 +1,4 @@
+package googlelocationdata
 
 import (
 	"encoding/json"
@@ -34,7 +35,13 @@ type Locations struct {
 	Locations []Location `json:"locations"`
 }
 
-func getmaxValues(locations Locations) {
+func check(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
+func GetmaxValues(locations Locations) {
 	var maxLong = 0
 	var maxLat = 0
 	var minLong = 99999999999999
@@ -67,7 +74,7 @@ func getmaxValues(locations Locations) {
 
 }
 
-func filterValues(locations Locations, filter config.Filter) Locations {
+func FilterValues(locations Locations, filter config.Filter) Locations {
 	var filtered Locations
 
 	for _, location := range locations.Locations {
@@ -89,7 +96,7 @@ func filterValues(locations Locations, filter config.Filter) Locations {
 	return filtered
 }
 
-func readData(filename string) Locations {
+func ReadData(filename string) Locations {
 
 	dat, frErr := ioutil.ReadFile(filename)
 	check(frErr)
@@ -103,7 +110,7 @@ func readData(filename string) Locations {
 	return locations
 }
 
-func writeData(filename string, locations Locations) {
+func WriteData(filename string, locations Locations) {
 	out, err := os.Create(filename)
 	if err != nil {
 		os.Exit(1)
