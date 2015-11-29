@@ -6,7 +6,9 @@ import (
 	"image"
 	"image/jpeg"
 	"os"
+	"time"
 
+	"github.com/christer79/location-visualizer/comparedates"
 	"github.com/christer79/location-visualizer/config"
 	"github.com/christer79/location-visualizer/googlelocationdata"
 	"github.com/dustin/go-heatmap"
