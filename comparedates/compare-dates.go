@@ -30,5 +30,5 @@ func ParseTimeNs(str string) time.Time {
 	sec_str = str[:len(str)-3]
 	sec, _ = strconv.ParseInt(sec_str, 10, 64)
 	nsec, _ = strconv.ParseInt(nsec_str, 10, 64)
-	return time.Unix(sec, nsec)
+	return time.Unix(sec, nsec).UTC()
 }

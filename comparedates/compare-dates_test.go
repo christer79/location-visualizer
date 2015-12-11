@@ -50,7 +50,8 @@ func TestParseTimeNs(t *testing.T) {
 		str  string
 		want time.Time
 	}{
-		{"1445444040096", time.Date(2015, time.October, 21, 18, 14, 00, 96, time.Local)},
+		{"1445444040096", time.Date(2015, time.October, 21, 16, 14, 0, 96, time.UTC)},
+		{"0000000000000", time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)},
 	}
 	for _, c := range cases {
 		got := ParseTimeNs(c.str)
