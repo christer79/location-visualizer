@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
+	"github.com/christer79/location-visualizer/comparedates"
 	"github.com/christer79/location-visualizer/config"
 )
 
@@ -48,6 +50,15 @@ func GetmaxValues(locations Locations) {
 	var minLat = 999999999999999
 	var maxAccuracy = 0
 	var minAccuracy = 99999999999
+
+	var beginTime = comparedates.ParseTimeStr(config.Filter.Time.Min)
+	var endTime = comparedates.ParseTimeStr(config.Filter.Time.Max)
+	var compareTime = false
+	if config.Filter.Time.Min != "" && config.Filter.Time.Max != "" {
+		compareTime = true
+	}
+	var timeStamp time.Time
+
 	for _, location := range locations.Locations {
 		if location.LatitudeE7 < minLat {
 			minLat = location.LatitudeE7
@@ -66,6 +77,12 @@ func GetmaxValues(locations Locations) {
 		}
 		if location.Accuracy < minAccuracy {
 			minAccuracy = location.Accuracy
+		}
+		if compareTime == true {
+			timeStamp = comparedates.ParseTimeNs(location.TimestampMs)
+			if !comparedates.InTimespan(beginTime, endTime, timeStamp) {
+				continue
+			}
 		}
 	}
 	fmt.Printf("Latitude (%v, %v) - diff: %v\n", minLat, maxLat, maxLong-minLong)
