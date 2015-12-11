@@ -1,16 +1,18 @@
 Filter:
   Latitude:
-    min: 55136731
-    max: 999999999999
+   min: 577086800
+   max: 577091300
+
   Longitude:
-    min: -28433583
-    max: 999999999999
+   min: 119800500
+   max: 119804800
+
   Accuracy:
     min: 4000
     max: 10000
   Time:
-    min: "2008-01-01"
-    max: "2016-01-01"
+    min: "2015-03-20 00:00:00"
+    max: "2015-03-20 23:00:00"
 
 outputs:
  - type: "jpeg"
@@ -22,6 +24,28 @@ outputs:
 
  - type: "json"
    filename: "filtered_data.json"
+
+ - type: "csv"
+   filename: "human.csv"
+
+ - type: "timeinregion"
+   filename: "atwork"
+   Filter:
+     Latitude:
+       min: 577086800
+       max: 577091300
+
+     Longitude:
+       min: 119800500
+       max: 119804800
+
+     Accuracy:
+       min: 4000
+       max: 10000
+     Time:
+       min: "2015-01-01 00:00:00"
+       max: "2016-12-13 00:00:00"
+
 
 inputs:
  - path: Platshistorik.json
