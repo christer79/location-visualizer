@@ -74,10 +74,7 @@ func GetmaxValues(locations Locations) {
 	fmt.Printf("Longitude (%v, %v) - diff: %v \n", minLong, maxLong, maxLat-minLat)
 	fmt.Printf("Accuracy (%v, %v)\n", minAccuracy, maxAccuracy)
 }
-
-func FilterValues(locations Locations, filter config.Filter) Locations {
-	var filtered Locations
-
+func InRegion(location Location, filter config.Filter) bool {
 	var beginTime = comparedates.ParseTimeStr(filter.Time.Min)
 	var endTime = comparedates.ParseTimeStr(filter.Time.Max)
 	var compareTime = false
@@ -86,26 +83,34 @@ func FilterValues(locations Locations, filter config.Filter) Locations {
 	}
 	var timeStamp time.Time
 
+	if location.LatitudeE7 < filter.Latitude.Min {
+		return false
+	}
+	if location.LatitudeE7 > filter.Latitude.Max {
+		return false
+	}
+	if location.LongitudeE7 < filter.Longitude.Min {
+		return false
+	}
+	if location.LongitudeE7 > filter.Longitude.Max {
+		return false
+	}
+	if compareTime {
+		timeStamp = comparedates.ParseTimeNs(location.TimestampMs)
+		if !comparedates.InTimespan(beginTime, endTime, timeStamp) {
+			return false
+		}
+	}
+	return true
+
+}
+func FilterValues(locations Locations, filter config.Filter) Locations {
+	var filtered Locations
+
 	for _, location := range locations.Locations {
-		if location.LatitudeE7 < filter.Latitude.Min {
-			continue
+		if InRegion(location, filter) {
+			filtered.Locations = append(filtered.Locations, location)
 		}
-		if location.LatitudeE7 > filter.Latitude.Max {
-			continue
-		}
-		if location.LongitudeE7 < filter.Longitude.Min {
-			continue
-		}
-		if location.LongitudeE7 > filter.Longitude.Max {
-			continue
-		}
-		if compareTime {
-			timeStamp = comparedates.ParseTimeNs(location.TimestampMs)
-			if !comparedates.InTimespan(beginTime, endTime, timeStamp) {
-				continue
-			}
-		}
-		filtered.Locations = append(filtered.Locations, location)
 	}
 	return filtered
 }
