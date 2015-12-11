@@ -21,6 +21,7 @@ func TestOuputFormats(t *testing.T) {
 	checkEqualString(t, "filename-0", output.Outputs[0].Filename, "output.jpg")
 	checkEqualString(t, "filename-1", output.Outputs[1].Filename, "output.txt")
 	checkEqualInt(t, "width-0", output.Outputs[0].Width, 1024)
+	checkEqualInt(t, "filter-0", output.Outputs[2].Filter.Latitude.Min, 576906339)
 }
 
 func TestParseConfigInput(t *testing.T) {
