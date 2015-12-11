@@ -7,6 +7,7 @@ import (
 	"image/jpeg"
 	"os"
 
+	"github.com/christer79/location-visualizer/comparedates"
 	"github.com/christer79/location-visualizer/config"
 	"github.com/christer79/location-visualizer/googlelocationdata"
 	"github.com/dustin/go-heatmap"
@@ -67,9 +68,13 @@ func main() {
 		locations = googlelocationdata.ReadData(input.Path)
 	}
 
+	fmt.Println("Max values of all data")
 	googlelocationdata.GetmaxValues(locations)
 
 	filteredLocations := googlelocationdata.FilterValues(locations, filter)
+
+	fmt.Println("Max values of filtered data")
+	googlelocationdata.GetmaxValues(filteredLocations)
 
 	points := []heatmap.DataPoint{}
 	for _, location := range filteredLocations.Locations {
@@ -91,6 +96,59 @@ func main() {
 
 			fmt.Println("Writing to: " + format.Filename)
 			writeImgToFile(img, format.Filename)
+		}
+		if format.Filetype == "timeinregion" {
+			out, err := os.Create(format.Filename)
+			if err != nil {
+				os.Exit(1)
+				fmt.Println(err)
+			}
+
+			defer out.Close()
+
+			inregion := false
+			var count int
+			for _, location := range locations.Locations {
+				if googlelocationdata.InRegion(location, format.Filter) {
+					if inregion == false {
+						line := fmt.Sprintf("Inside: %v - ", comparedates.ParseTimeNs(location.TimestampMs))
+						if _, err = out.WriteString(line); err != nil {
+							panic(err)
+						}
+						fmt.Printf(line)
+					}
+					count++
+					inregion = true
+				} else {
+					if inregion == true {
+						line := fmt.Sprintf(" %v   (%d)\n", comparedates.ParseTimeNs(location.TimestampMs), count)
+						if _, err = out.WriteString(line); err != nil {
+							panic(err)
+						}
+						fmt.Printf(line)
+						count = 0
+					}
+					inregion = false
+				}
+
+			}
+
+		}
+		if format.Filetype == "csv" {
+			out, err := os.Create(format.Filename)
+			if err != nil {
+				os.Exit(1)
+				fmt.Println(err)
+			}
+			defer out.Close()
+
+			for _, location := range filteredLocations.Locations {
+
+				line := fmt.Sprintf("%v ; %d ; %d \n", comparedates.ParseTimeNs(location.TimestampMs), location.LongitudeE7, location.LatitudeE7)
+				if _, err = out.WriteString(line); err != nil {
+					panic(err)
+				}
+			}
 		}
 	}
 }

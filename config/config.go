@@ -49,7 +49,7 @@ type Filter struct {
 	Time      IntervalString `yaml:"Time"`
 }
 
-//OutputFormat struct with parameters for how to format the output data
+//Format struct with parameters for how to format the output data
 type Format struct {
 	Filetype   string `yaml:"type"`
 	Filename   string `yaml:"filename"`
@@ -57,6 +57,7 @@ type Format struct {
 	Height     int    `yaml:"height"`
 	CircleSize int    `yaml:"circleSize"`
 	Opacity    uint8  `yaml:"opacity"`
+	Filter     Filter `yaml:"Filter"`
 }
 
 //OutputFormats helper to help parse OutputFormat from yaml-file
