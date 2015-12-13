@@ -3,8 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"html/template"
 	"image"
 	"image/jpeg"
+	"log"
+	"net/http"
 	"os"
 
 	"github.com/christer79/location-visualizer/comparedates"
@@ -19,6 +22,19 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
+}
+
+type MapData struct {
+	Title string
+}
+
+func viewHandler(w http.ResponseWriter, r *http.Request) {
+	p := MapData{Title: "Test"}
+	t, err := template.ParseFiles("html/view.html")
+	if err != nil {
+		log.Println(err)
+	}
+	t.Execute(w, p)
 }
 
 func writeImgToFile(img image.Image, filename string) {
@@ -84,6 +100,7 @@ func main() {
 
 	for _, format := range outputformat.Outputs {
 		fmt.Printf("Output \n - type: %s \n - path: %s \n", format.Filetype, format.Filename)
+
 		if format.Filetype == "json" {
 			googlelocationdata.WriteData(format.Filename, filteredLocations, format.Filetype)
 		}
@@ -101,6 +118,7 @@ func main() {
 			fmt.Println("Writing to: " + format.Filename)
 			writeImgToFile(img, format.Filename)
 		}
+
 		if format.Filetype == "timeinregion" {
 			out, err := os.Create(format.Filename)
 			if err != nil {
@@ -119,7 +137,7 @@ func main() {
 						if _, err = out.WriteString(line); err != nil {
 							panic(err)
 						}
-						fmt.Printf(line)
+						//		fmt.Printf(line)
 					}
 					count++
 					inregion = true
@@ -129,14 +147,14 @@ func main() {
 						if _, err = out.WriteString(line); err != nil {
 							panic(err)
 						}
-						fmt.Printf(line)
+						//	fmt.Printf(line)
 						count = 0
 					}
 					inregion = false
 				}
-
 			}
-
 		}
 	}
+	http.HandleFunc("/view/", viewHandler)
+	http.ListenAndServe(":8000", nil)
 }
