@@ -129,16 +129,20 @@ func ReadData(filename string) Locations {
 	return locations
 }
 
-func WriteData(filename string, locations Locations) {
+func WriteData(filename string, locations Locations, format string) {
 	out, err := os.Create(filename)
 	if err != nil {
 		os.Exit(1)
 		fmt.Println(err)
 	}
+	defer out.Close()
 
-	dat, err := json.Marshal(locations)
-	if err != nil {
-		fmt.Println("error:", err)
+	if format == "json" {
+		dat, err := json.Marshal(locations)
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		out.Write(dat)
 	}
-	out.Write(dat)
+
 }

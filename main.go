@@ -85,8 +85,12 @@ func main() {
 	for _, format := range outputformat.Outputs {
 		fmt.Printf("Output \n - type: %s \n - path: %s \n", format.Filetype, format.Filename)
 		if format.Filetype == "json" {
-			googlelocationdata.WriteData(format.Filename, filteredLocations)
+			googlelocationdata.WriteData(format.Filename, filteredLocations, format.Filetype)
 		}
+		if format.Filetype == "csv" {
+			googlelocationdata.WriteData(format.Filename, filteredLocations, format.Filetype)
+		}
+
 		if format.Filetype == "jpeg" {
 			// scheme, _ := schemes.FromImage("../schemes/fire.png")
 			scheme := schemes.OMG
@@ -134,23 +138,5 @@ func main() {
 			}
 
 		}
-		if format.Filetype == "csv" {
-			out, err := os.Create(format.Filename)
-			if err != nil {
-				os.Exit(1)
-				fmt.Println(err)
-			}
-			defer out.Close()
-
-			for _, location := range filteredLocations.Locations {
-
-				line := fmt.Sprintf("%v ; %d ; %d \n", comparedates.ParseTimeNs(location.TimestampMs), location.LongitudeE7, location.LatitudeE7)
-				if _, err = out.WriteString(line); err != nil {
-					panic(err)
-				}
-			}
-		}
 	}
 }
-
-//png.Encode(os.Stdout, img)
