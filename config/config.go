@@ -75,6 +75,7 @@ func ParseConfigFilter(filename string) Filters {
 	}
 	return filter
 }
+
 func ParseConfigOutputFormat(filename string) OutputFormats {
 	var outputformat OutputFormats
 	dat, frErr := ioutil.ReadFile(filename)

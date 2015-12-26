@@ -11,6 +11,12 @@ import (
 	"github.com/christer79/location-visualizer/config"
 )
 
+type TimeEnterExit struct {
+	Enter    time.Time `json:"enter"`
+	Exit     time.Time `json:"exit"`
+	TimeDiff time.Time `json:"diff"`
+}
+
 //Activity keep an activity type and yhe confidence of that activity
 type Activity struct {
 	Type       string `json:"type"`
@@ -43,7 +49,7 @@ func check(e error) {
 	}
 }
 
-func GetmaxValues(locations Locations) {
+func GetmaxValues(locations Locations) config.Filter {
 	var maxLong = 0
 	var maxLat = 0
 	var minLong = 99999999999999
@@ -73,10 +79,18 @@ func GetmaxValues(locations Locations) {
 	fmt.Printf("Latitude (%v, %v) - diff: %v\n", minLat, maxLat, maxLong-minLong)
 	fmt.Printf("Longitude (%v, %v) - diff: %v \n", minLong, maxLong, maxLat-minLat)
 	fmt.Printf("Accuracy (%v, %v)\n", minAccuracy, maxAccuracy)
+	fmt.Printf("filter/%v/%v/%v/%v/2015-12-12/2015-12-13/", minLong, minLat, maxLong-minLong, maxLat-minLat)
+	return config.Filter{Longitude: config.IntervalInt{Min: minLong, Max: maxLong}, Latitude: config.IntervalInt{Min: minLat, Max: maxLat}, Accuracy: config.IntervalInt{Min: minAccuracy, Max: maxAccuracy}}
 }
+
 func InRegion(location Location, filter config.Filter) bool {
 	var beginTime = comparedates.ParseTimeStr(filter.Time.Min)
 	var endTime = comparedates.ParseTimeStr(filter.Time.Max)
+
+	/*fmt.Printf("BEGIN: %v", beginTime)
+	fmt.Printf("END:   %v", endTime)
+	*/
+
 	var compareTime = false
 	if filter.Time.Min != "" && filter.Time.Max != "" {
 		compareTime = true
@@ -104,9 +118,40 @@ func InRegion(location Location, filter config.Filter) bool {
 	return true
 
 }
+
+func TimeInRegion(locations Locations, filter config.Filter) []TimeEnterExit {
+	var time_enter_exit []TimeEnterExit
+
+	inregion := false
+	fmt.Println(filter)
+	var count int
+	// Time goes backward in this struct
+	for _, location := range locations.Locations {
+		if InRegion(location, filter) {
+			if inregion == false {
+				time_enter_exit = append(time_enter_exit, TimeEnterExit{Exit: comparedates.ParseTimeNs(location.TimestampMs)})
+				fmt.Printf("Exit %v \n", comparedates.ParseTimeNs(location.TimestampMs))
+				fmt.Println(location)
+			}
+			count++
+			inregion = true
+		} else {
+			if inregion == true {
+				time_enter_exit[len(time_enter_exit)-1].Enter = comparedates.ParseTimeNs(location.TimestampMs)
+				fmt.Printf("Enter %v \n", comparedates.ParseTimeNs(location.TimestampMs))
+				fmt.Println(location)
+				//time_enter_exit[len(time_enter_exit)-1].TimeDiff = comparedates.ParseTimeNs(location.TimestampMs) - time_enter_exit[len(time_enter_exit)-1].Enter
+				count = 0
+			}
+			inregion = false
+		}
+	}
+	fmt.Print(time_enter_exit)
+	return time_enter_exit
+}
+
 func FilterValues(locations Locations, filter config.Filter) Locations {
 	var filtered Locations
-
 	for _, location := range locations.Locations {
 		if InRegion(location, filter) {
 			filtered.Locations = append(filtered.Locations, location)
