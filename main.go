@@ -28,10 +28,13 @@ func check(e error) {
 
 type MapData struct {
 	Title string
+	Host  string
+	Port  string
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
-	p := MapData{Title: "Test"}
+	//TODO: Make sure the host is dynamically added
+	p := MapData{Title: "Test", Host: "100.97.133.229", Port: "8080"}
 	t, err := template.ParseFiles("html/view.html")
 	if err != nil {
 		log.Println(err)
@@ -62,6 +65,7 @@ func filterHandler(w http.ResponseWriter, r *http.Request) {
 	filter := config.Filter{Longitude: config.IntervalInt{Min: longitude, Max: longitude + width}, Latitude: config.IntervalInt{Min: latitude, Max: latitude + height}, Accuracy: config.IntervalInt{Min: 0, Max: 9000}, Time: config.IntervalString{Min: datebegin, Max: dateend}}
 	filtered := googlelocationdata.FilterValues(locations, filter)
 	json.NewEncoder(w).Encode(filtered)
+	log.Println("filterHandler: ENDED")
 }
 
 func timeregionHandler(w http.ResponseWriter, r *http.Request) {

@@ -52,7 +52,7 @@
           <tr>
               <td>Long:</td>
               <td><input id="longitude" name="longitude-begin" type="longitude" value="0"></td>
-              <td><input id="longitude" name="longitude-end" type="longitude" value="30000000"></td>
+              <td><input id="longitude" name="longitude-end" type="longitude" value="300000000"></td>
               <td><div id="mouselong" style="display: inline"></div></td>
           </tr>
           <tr>
@@ -109,7 +109,7 @@ function displayCoordinates(pnt) {
 function initMap() {
   $.ajax({
   dataType: "json",
-  url: "http://localhost:8080/ranges/2015-01-01/2015-01-31/",
+  url: "http://{{.Host}}:{{.Port}}/ranges/2015-01-01/2015-01-31/",
   success: function(data) {
     console.log(data)
     center_long = (data["Longitude"]["Max"]/10000000+data["Longitude"]["Min"]/10000000)/2
@@ -178,11 +178,11 @@ function getPoints() {
   var lat1=document.forms["timeInterval"]["latitude-begin"].value
   var lat2=document.forms["timeInterval"]["latitude-end"].value
 
-  call="http://localhost:8080/filter/"+Math.min(long1,long2)+ "/"+Math.min(lat1,lat2)+"/"+Math.abs(long1-long2  )+"/"+Math.abs(lat1-lat2)+"/" + begin + "/" + end + "/"
+  call="http://{{.Host}}:{{.Port}}/filter/"+Math.min(long1,long2)+ "/"+Math.min(lat1,lat2)+"/"+Math.abs(long1-long2  )+"/"+Math.abs(lat1-lat2)+"/" + begin + "/" + end + "/"
   console.log(call)
   $.ajax({
   dataType: "json",
-  //url: "http://localhost:8080/filter/-1237980383/180035703/1455212605/491331611/2015-01-01/2015-01-31/",
+  //url: "http://{{.Host}}:{{.Port}}/filter/-1237980383/180035703/1455212605/491331611/2015-01-01/2015-01-31/",
   url: call,
   success: function(data) {
     datapoints=data
